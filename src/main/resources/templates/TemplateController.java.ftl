@@ -19,6 +19,7 @@ import ${packageName}.model.vo.${upperDataKey}VO;
 import ${packageName}.service.${upperDataKey}Service;
 import ${packageName}.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/${dataKey}")
 @Slf4j
+@Tag(name = "${dataName}相关接口")
 public class ${upperDataKey}Controller {
 
     @Resource
