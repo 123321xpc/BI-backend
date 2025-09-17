@@ -3,7 +3,8 @@ package ${packageName}.model.dto.${dataKey};
 import ${packageName}.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
+import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -19,37 +20,30 @@ public class ${upperDataKey}QueryRequest extends PageRequest implements Serializ
     /**
      * id
      */
+    @Schema(description = "id")
+    @NotNull
     private Long id;
-
-    /**
-     * id
-     */
-    private Long notId;
 
     /**
      * 搜索词
      */
+    @Schema(description = "搜索词")
+    @NotNull
     private String searchText;
 
     /**
      * 标题
      */
+    @Schema(description = "标题")
+    @NotNull
     private String title;
 
     /**
      * 内容
      */
+    @Schema(description = "标题")
+    @NotNull
     private String content;
-
-    /**
-     * 标签列表
-     */
-    private List<String> tags;
-
-    /**
-     * 创建用户 id
-     */
-    private Long userId;
 
     private static final long serialVersionUID = 1L;
 }
