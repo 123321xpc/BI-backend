@@ -19,6 +19,7 @@ import ${packageName}.model.vo.${upperDataKey}VO;
 import ${packageName}.service.${upperDataKey}Service;
 import ${packageName}.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +52,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/add")
+    @Operation(summary = "创建${dataName}")
     public BaseResponse<Long> add${upperDataKey}(@RequestBody ${upperDataKey}AddRequest ${dataKey}AddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(${dataKey}AddRequest == null, ErrorCode.PARAMS_ERROR);
         // todo 在此处将实体类和 DTO 进行转换
@@ -77,6 +79,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/delete")
+    @Operation(summary = "删除${dataName}")
     public BaseResponse<Boolean> delete${upperDataKey}(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -104,6 +107,7 @@ public class ${upperDataKey}Controller {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @Operation(summary = "更新${dataName}（仅管理员可用）")
     public BaseResponse<Boolean> update${upperDataKey}(@RequestBody ${upperDataKey}UpdateRequest ${dataKey}UpdateRequest) {
         if (${dataKey}UpdateRequest == null || ${dataKey}UpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -130,6 +134,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @GetMapping("/get/vo")
+    @Operation(summary = "根据 id 获取${dataName}（封装类）")
     public BaseResponse<${upperDataKey}VO> get${upperDataKey}VOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -146,6 +151,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/list/page")
+    @Operation(summary = "分页获取${dataName}列表（仅管理员可用）")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<${upperDataKey}>> list${upperDataKey}ByPage(@RequestBody ${upperDataKey}QueryRequest ${dataKey}QueryRequest) {
         long current = ${dataKey}QueryRequest.getCurrent();
@@ -164,6 +170,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @Operation(summary = "分页获取${dataName}列表（封装类）")
     public BaseResponse<Page<${upperDataKey}VO>> list${upperDataKey}VOByPage(@RequestBody ${upperDataKey}QueryRequest ${dataKey}QueryRequest,
                                                                HttpServletRequest request) {
         long current = ${dataKey}QueryRequest.getCurrent();
@@ -185,6 +192,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @Operation(summary = "分页获取当前登录用户创建的${dataName}列表")
     public BaseResponse<Page<${upperDataKey}VO>> listMy${upperDataKey}VOByPage(@RequestBody ${upperDataKey}QueryRequest ${dataKey}QueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(${dataKey}QueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -210,6 +218,7 @@ public class ${upperDataKey}Controller {
      * @return
      */
     @PostMapping("/edit")
+    @Operation(summary = "编辑${dataName}（给用户使用）")
     public BaseResponse<Boolean> edit${upperDataKey}(@RequestBody ${upperDataKey}EditRequest ${dataKey}EditRequest, HttpServletRequest request) {
         if (${dataKey}EditRequest == null || ${dataKey}EditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
