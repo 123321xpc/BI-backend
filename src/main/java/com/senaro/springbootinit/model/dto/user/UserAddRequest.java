@@ -1,6 +1,8 @@
 package com.senaro.springbootinit.model.dto.user;
 
 import java.io.Serializable;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,27 +14,19 @@ import org.jetbrains.annotations.NotNull;
 @Data
 public class UserAddRequest implements Serializable {
 
-    /**
-     * 用户昵称
-     */
     @NotNull
+    @Schema(description = "昵称")
     private String userName;
 
-    /**
-     * 账号
-     */
     @NotNull
+    @Schema(description = "账号")
     private String userAccount;
 
-    /**
-     * 用户头像
-     */
+    @Schema(description = "头像")
     private String userAvatar;
 
-    /**
-     * 用户角色: user, admin
-     */
     @NotNull
+    @Schema(description = "权限")
     private String userRole;
 
     private static final long serialVersionUID = 1L;

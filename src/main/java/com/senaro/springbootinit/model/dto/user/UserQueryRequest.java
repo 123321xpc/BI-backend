@@ -2,6 +2,8 @@ package com.senaro.springbootinit.model.dto.user;
 
 import com.senaro.springbootinit.common.PageRequest;
 import java.io.Serializable;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,34 +15,14 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class UserQueryRequest extends PageRequest implements Serializable {
-    /**
-     * id
-     */
-    private Long id;
 
-    /**
-     * 开放平台id
-     */
-    private String unionId;
-
-    /**
-     * 公众号openId
-     */
-    private String mpOpenId;
-
-    /**
-     * 用户昵称
-     */
+    @Schema(description = "昵称")
     private String userName;
 
-    /**
-     * 简介
-     */
+    @Schema(description = "介绍")
     private String userProfile;
 
-    /**
-     * 用户角色：user/admin/ban
-     */
+    @Schema(description = "权限")
     private String userRole;
 
     private static final long serialVersionUID = 1L;

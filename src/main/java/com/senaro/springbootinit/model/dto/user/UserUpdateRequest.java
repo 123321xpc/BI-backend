@@ -1,6 +1,8 @@
 package com.senaro.springbootinit.model.dto.user;
 
 import java.io.Serializable;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,26 +17,19 @@ public class UserUpdateRequest implements Serializable {
      * id
      */
     @NotNull
+    @Schema(description = "id")
     private Long id;
 
-    /**
-     * 用户昵称
-     */
+    @Schema(description = "用户名")
     private String userName;
 
-    /**
-     * 用户头像
-     */
+    @Schema(description = "账号")
     private String userAvatar;
 
-    /**
-     * 简介
-     */
+    @Schema(description = "用户简介")
     private String userProfile;
 
-    /**
-     * 用户角色：user/admin/ban
-     */
+    @Schema(description = "权限")
     private String userRole;
 
     private static final long serialVersionUID = 1L;
