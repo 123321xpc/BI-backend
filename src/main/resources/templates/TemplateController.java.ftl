@@ -46,13 +46,6 @@ public class ${upperDataKey}Controller {
 
     // region 增删改查
 
-    /**
-     * 创建${dataName}
-     *
-     * @param ${dataKey}AddRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/add")
     @Operation(summary = "创建${dataName}")
     public BaseResponse<Long> add${upperDataKey}(@RequestBody ${upperDataKey}AddRequest ${dataKey}AddRequest, HttpServletRequest request) {
@@ -60,8 +53,6 @@ public class ${upperDataKey}Controller {
         // todo 在此处将实体类和 DTO 进行转换
         ${upperDataKey} ${dataKey} = new ${upperDataKey}();
         BeanUtils.copyProperties(${dataKey}AddRequest, ${dataKey});
-        // 数据校验
-        ${dataKey}Service.valid${upperDataKey}(${dataKey}, true);
         // todo 填充默认值
         User loginUser = userService.getLoginUser(request);
         ${dataKey}.setUserId(loginUser.getId());
@@ -73,13 +64,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(new${upperDataKey}Id);
     }
 
-    /**
-     * 删除${dataName}
-     *
-     * @param deleteRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/delete")
     @Operation(summary = "删除${dataName}")
     public BaseResponse<Boolean> delete${upperDataKey}(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -101,12 +85,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(true);
     }
 
-    /**
-     * 更新${dataName}（仅管理员可用）
-     *
-     * @param ${dataKey}UpdateRequest
-     * @return
-     */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     @Operation(summary = "更新${dataName}（仅管理员可用）")
@@ -117,8 +95,6 @@ public class ${upperDataKey}Controller {
         // todo 在此处将实体类和 DTO 进行转换
         ${upperDataKey} ${dataKey} = new ${upperDataKey}();
         BeanUtils.copyProperties(${dataKey}UpdateRequest, ${dataKey});
-        // 数据校验
-        ${dataKey}Service.valid${upperDataKey}(${dataKey}, false);
         // 判断是否存在
         long id = ${dataKey}UpdateRequest.getId();
         ${upperDataKey} old${upperDataKey} = ${dataKey}Service.getById(id);
@@ -129,12 +105,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(true);
     }
 
-    /**
-     * 根据 id 获取${dataName}（封装类）
-     *
-     * @param id
-     * @return
-     */
     @GetMapping("/get/vo")
     @Operation(summary = "根据 id 获取${dataName}（封装类）")
     public BaseResponse<${upperDataKey}VO> get${upperDataKey}VOById(long id, HttpServletRequest request) {
@@ -146,12 +116,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(${dataKey}Service.get${upperDataKey}VO(${dataKey}, request));
     }
 
-    /**
-     * 分页获取${dataName}列表（仅管理员可用）
-     *
-     * @param ${dataKey}QueryRequest
-     * @return
-     */
     @PostMapping("/list/page")
     @Operation(summary = "分页获取${dataName}列表（仅管理员可用）")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -164,13 +128,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(${dataKey}Page);
     }
 
-    /**
-     * 分页获取${dataName}列表（封装类）
-     *
-     * @param ${dataKey}QueryRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/list/page/vo")
     @Operation(summary = "分页获取${dataName}列表（封装类）")
     public BaseResponse<Page<${upperDataKey}VO>> list${upperDataKey}VOByPage(@RequestBody ${upperDataKey}QueryRequest ${dataKey}QueryRequest,
@@ -186,13 +143,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(${dataKey}Service.get${upperDataKey}VOPage(${dataKey}Page, request));
     }
 
-    /**
-     * 分页获取当前登录用户创建的${dataName}列表
-     *
-     * @param ${dataKey}QueryRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/my/list/page/vo")
     @Operation(summary = "分页获取当前登录用户创建的${dataName}列表")
     public BaseResponse<Page<${upperDataKey}VO>> listMy${upperDataKey}VOByPage(@RequestBody ${upperDataKey}QueryRequest ${dataKey}QueryRequest,
@@ -212,13 +162,6 @@ public class ${upperDataKey}Controller {
         return ResultUtils.success(${dataKey}Service.get${upperDataKey}VOPage(${dataKey}Page, request));
     }
 
-    /**
-     * 编辑${dataName}（给用户使用）
-     *
-     * @param ${dataKey}EditRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/edit")
     @Operation(summary = "编辑${dataName}（给用户使用）")
     public BaseResponse<Boolean> edit${upperDataKey}(@RequestBody ${upperDataKey}EditRequest ${dataKey}EditRequest, HttpServletRequest request) {
@@ -228,13 +171,11 @@ public class ${upperDataKey}Controller {
         // todo 在此处将实体类和 DTO 进行转换
         ${upperDataKey} ${dataKey} = new ${upperDataKey}();
         BeanUtils.copyProperties(${dataKey}EditRequest, ${dataKey});
-        // 数据校验
-        ${dataKey}Service.valid${upperDataKey}(${dataKey}, false);
-        User loginUser = userService.getLoginUser(request);
         // 判断是否存在
         long id = ${dataKey}EditRequest.getId();
         ${upperDataKey} old${upperDataKey} = ${dataKey}Service.getById(id);
         ThrowUtils.throwIf(old${upperDataKey} == null, ErrorCode.NOT_FOUND_ERROR);
+        User loginUser = userService.getLoginUser(request);
         // 仅本人或管理员可编辑
         if (!old${upperDataKey}.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);

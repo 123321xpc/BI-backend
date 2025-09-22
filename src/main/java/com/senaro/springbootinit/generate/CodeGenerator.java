@@ -5,12 +5,12 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.io.FileWriter;
-import java.io.Writer;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
+import static cn.hutool.core.text.CharSequenceUtil.upperFirst;
 
 /**
  * 代码生成器
@@ -27,65 +27,87 @@ public class CodeGenerator {
      * @throws IOException
      */
     public static void main(String[] args) throws TemplateException, IOException {
-        // 指定生成参数
-        String packageName = "com.yupi.springbootinit";
-        String dataName = "用户评论";
-        String dataKey = "userComment";
-        String upperDataKey = "UserComment";
+        // ===== ① 基础参数 =====
+        String packageName = "com.senaro.springbootinit";
+        String dataName = "问题";
+        String dataKey = "question";
+        String upperDataKey = "Question";
 
-        // 封装生成参数
+        // ===== ② 指定实体类全限定名 =====
+        String entityClassName = packageName + ".model.entity." + upperDataKey;
+        Class<?> entityClass = null;
+        try {
+            entityClass = Class.forName(entityClassName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // ===== ③ 解析实体字段 =====
+        List<Map<String, String>> fieldList = new ArrayList<>();
+        Set<String> importSet = new HashSet<>();
+
+        for (Field field : entityClass.getDeclaredFields()) {
+            // 跳过 static / transient 字段
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+                continue;
+            }
+            Map<String, String> f = new HashMap<>();
+            f.put("type", field.getType().getSimpleName());
+            f.put("name", field.getName());
+            f.put("camelName", upperFirst(field.getName()));
+            fieldList.add(f);
+
+            // 记录需额外导入的包（排除 java.lang 和基本类型）
+            Package p = field.getType().getPackage();
+            if (p != null && !"java.lang".equals(p.getName())) {
+                importSet.add(field.getType().getName());
+            }
+        }
+
+        // ===== ④ 注入模板参数 =====
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("packageName", packageName);
         dataModel.put("dataName", dataName);
         dataModel.put("dataKey", dataKey);
         dataModel.put("upperDataKey", upperDataKey);
+        dataModel.put("fields", fieldList);
+        dataModel.put("importSet", importSet);
 
-        // 生成路径默认值
+        // ===== ⑤ 调用模板生成 AddRequest（其余 Service / VO 等逻辑照旧）=====
         String projectPath = System.getProperty("user.dir");
-        // 参考路径，可以自己调整下面的 outputPath
-        String inputPath = projectPath + File.separator + "src/main/resources/templates/模板名称.java.ftl";
-        String outputPath = String.format("%s/generator/包名/%s类后缀.java", projectPath, upperDataKey);
-
-        // 1、生成 Controller
-        // 指定生成路径
-        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateController.java.ftl";
-        outputPath = String.format("%s/generator/controller/%sController.java", projectPath, upperDataKey);
-        // 生成
+        String inputPath = projectPath + "/src/main/resources/templates/model/TemplateAddRequest.java.ftl";
+        String outputPath = String.format("%s/generator/model/dto/%s/%sAddRequest.java", projectPath,dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
-        System.out.println("生成 Controller 成功，文件路径：" + outputPath);
-
-        // 2、生成 Service 接口和实现类
-        // 生成 Service 接口
-        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateService.java.ftl";
-        outputPath = String.format("%s/generator/service/%sService.java", projectPath, upperDataKey);
+        inputPath = projectPath + "/src/main/resources/templates/model/TemplateEditRequest.java.ftl";
+        outputPath = String.format("%s/generator/model/dto/%s/%sEditRequest.java", projectPath,dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
-        System.out.println("生成 Service 接口成功，文件路径：" + outputPath);
-        // 生成 Service 实现类
-        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateServiceImpl.java.ftl";
-        outputPath = String.format("%s/generator/service/impl/%sServiceImpl.java", projectPath, upperDataKey);
+        inputPath = projectPath + "/src/main/resources/templates/model/TemplateUpdateRequest.java.ftl";
+        outputPath = String.format("%s/generator/model/dto/%s/%sUpdateRequest.java", projectPath,dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
-        System.out.println("生成 Service 实现类成功，文件路径：" + outputPath);
-
-        // 3、生成数据模型封装类（包括 DTO 和 VO）
-        // 生成 DTO
-        inputPath = projectPath + File.separator + "src/main/resources/templates/model/TemplateAddRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%sAddRequest.java", projectPath, upperDataKey);
+        inputPath = projectPath + "/src/main/resources/templates/model/TemplateQueryRequest.java.ftl";
+        outputPath = String.format("%s/generator/model/dto/%s/%sQueryRequest.java", projectPath,dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
-        inputPath = projectPath + File.separator + "src/main/resources/templates/model/TemplateQueryRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%sQueryRequest.java", projectPath, upperDataKey);
-        doGenerate(inputPath, outputPath, dataModel);
-        inputPath = projectPath + File.separator + "src/main/resources/templates/model/TemplateEditRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%sEditRequest.java", projectPath, upperDataKey);
-        doGenerate(inputPath, outputPath, dataModel);
-        inputPath = projectPath + File.separator + "src/main/resources/templates/model/TemplateUpdateRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%sUpdateRequest.java", projectPath, upperDataKey);
-        doGenerate(inputPath, outputPath, dataModel);
-        System.out.println("生成 DTO 成功，文件路径：" + outputPath);
+        System.out.println("生成 DTO 成功：" + outputPath);
         // 生成 VO
         inputPath = projectPath + File.separator + "src/main/resources/templates/model/TemplateVO.java.ftl";
         outputPath = String.format("%s/generator/model/vo/%sVO.java", projectPath, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
         System.out.println("生成 VO 成功，文件路径：" + outputPath);
+        // 生成 Service
+        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateService.java.ftl";
+        outputPath = String.format("%s/generator/service/%sService.java", projectPath, upperDataKey);
+        doGenerate(inputPath, outputPath, dataModel);
+        System.out.println("生成 Service 成功，文件路径：" + outputPath);
+        // 生成 ServiceImpl
+        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateServiceImpl.java.ftl";
+        outputPath = String.format("%s/generator/service/%sServiceImpl.java", projectPath, upperDataKey);
+        doGenerate(inputPath, outputPath, dataModel);
+        System.out.println("生成 Service 成功，文件路径：" + outputPath);
+        // 生成 Controller
+        inputPath = projectPath + File.separator + "src/main/resources/templates/TemplateController.java.ftl";
+        outputPath = String.format("%s/generator/controller/%sController.java", projectPath, upperDataKey);
+        doGenerate(inputPath, outputPath, dataModel);
+        System.out.println("生成 Controller 成功，文件路径：" + outputPath);
     }
 
     /**

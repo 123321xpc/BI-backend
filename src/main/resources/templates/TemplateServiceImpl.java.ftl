@@ -10,8 +10,6 @@ import ${packageName}.exception.ThrowUtils;
 import ${packageName}.mapper.${upperDataKey}Mapper;
 import ${packageName}.model.dto.${dataKey}.${upperDataKey}QueryRequest;
 import ${packageName}.model.entity.${upperDataKey};
-import ${packageName}.model.entity.${upperDataKey}Favour;
-import ${packageName}.model.entity.${upperDataKey}Thumb;
 import ${packageName}.model.entity.User;
 import ${packageName}.model.vo.${upperDataKey}VO;
 import ${packageName}.model.vo.UserVO;
@@ -22,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.BeanUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -33,8 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * ${dataName}服务实现
- *
-
  */
 @Service
 @Slf4j
@@ -44,33 +41,7 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
     private UserService userService;
 
     /**
-     * 校验数据
-     *
-     * @param ${dataKey}
-     * @param add      对创建的数据进行校验
-     */
-    @Override
-    public void valid${upperDataKey}(${upperDataKey} ${dataKey}, boolean add) {
-        ThrowUtils.throwIf(${dataKey} == null, ErrorCode.PARAMS_ERROR);
-        // todo 从对象中取值
-        String title = ${dataKey}.getTitle();
-        // 创建数据时，参数不能为空
-        if (add) {
-            // todo 补充校验规则
-            ThrowUtils.throwIf(StringUtils.isBlank(title), ErrorCode.PARAMS_ERROR);
-        }
-        // 修改数据时，有参数则校验
-        // todo 补充校验规则
-        if (StringUtils.isNotBlank(title)) {
-            ThrowUtils.throwIf(title.length() > 80, ErrorCode.PARAMS_ERROR, "标题过长");
-        }
-    }
-
-    /**
      * 获取查询条件
-     *
-     * @param ${dataKey}QueryRequest
-     * @return
      */
     @Override
     public QueryWrapper<${upperDataKey}> getQueryWrapper(${upperDataKey}QueryRequest ${dataKey}QueryRequest) {
@@ -79,23 +50,14 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
             return queryWrapper;
         }
         // todo 从对象中取值
-        Long id = ${dataKey}QueryRequest.getId();
-        Long notId = ${dataKey}QueryRequest.getNotId();
-        String title = ${dataKey}QueryRequest.getTitle();
-        String content = ${dataKey}QueryRequest.getContent();
-        String searchText = ${dataKey}QueryRequest.getSearchText();
-        String sortField = ${dataKey}QueryRequest.getSortField();
-        String sortOrder = ${dataKey}QueryRequest.getSortOrder();
-        List<String> tagList = ${dataKey}QueryRequest.getTags();
-        Long userId = ${dataKey}QueryRequest.getUserId();
-        // todo 补充需要的查询条件
+
+// todo 补充需要的查询条件
         // 从多字段中搜索
         if (StringUtils.isNotBlank(searchText)) {
             // 需要拼接查询条件
             queryWrapper.and(qw -> qw.like("title", searchText).or().like("content", searchText));
         }
         // 模糊查询
-        queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
         // JSON 数组查询
         if (CollUtil.isNotEmpty(tagList)) {
@@ -104,37 +66,26 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
             }
         }
         // 精确查询
-        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        // 排序规则
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
+
         return queryWrapper;
     }
 
     /**
      * 获取${dataName}封装
-     *
-     * @param ${dataKey}
-     * @param request
-     * @return
      */
     @Override
     public ${upperDataKey}VO get${upperDataKey}VO(${upperDataKey} ${dataKey}, HttpServletRequest request) {
         // 对象转封装类
-        ${upperDataKey}VO ${dataKey}VO = ${upperDataKey}VO.objToVo(${dataKey});
+        ${upperDataKey}VO ${dataKey}VO = new ${upperDataKey}VO();
+        BeanUtils.copyProperties(${dataKey}, ${dataKey}VO);
 
         return ${dataKey}VO;
     }
 
     /**
      * 分页获取${dataName}封装
-     *
-     * @param ${dataKey}Page
-     * @param request
-     * @return
      */
     @Override
     public Page<${upperDataKey}VO> get${upperDataKey}VOPage(Page<${upperDataKey}> ${dataKey}Page, HttpServletRequest request) {
@@ -145,7 +96,9 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
         }
         // 对象列表 => 封装对象列表
         List<${upperDataKey}VO> ${dataKey}VOList = ${dataKey}List.stream().map(${dataKey} -> {
-            return ${upperDataKey}VO.objToVo(${dataKey});
+            ${upperDataKey}VO ${dataKey}VO = new ${upperDataKey}VO();
+            BeanUtils.copyProperties(${dataKey}, ${dataKey}VO);
+            return ${dataKey}VO;
         }).collect(Collectors.toList());
 
         ${dataKey}VOPage.setRecords(${dataKey}VOList);

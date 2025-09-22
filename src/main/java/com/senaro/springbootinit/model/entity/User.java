@@ -1,85 +1,89 @@
 package com.senaro.springbootinit.model.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 用户
- *
-
+ * @TableName user
  */
-@TableName(value = "user")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements Serializable {
 
-    /**
-     * id
-     */
-    @TableId(type = IdType.ASSIGN_ID)
+
+    @Schema(description = "id")
+    @NotNull
     private Long id;
 
-    /**
-     * 用户账号
-     */
+
+    @Schema(description = "账号")
+    @NotNull
     private String userAccount;
 
-    /**
-     * 用户密码
-     */
+
+    @Schema(description = "密码")
+    @NotNull
     private String userPassword;
 
-    /**
-     * 开放平台id
-     */
+
+    @Schema(description = "微信开放平台id")
+    @NotNull
     private String unionId;
 
-    /**
-     * 公众号openId
-     */
+
+    @Schema(description = "公众号openId")
+    @NotNull
     private String mpOpenId;
 
-    /**
-     * 用户昵称
-     */
+
+    @Schema(description = "用户昵称")
+    @NotNull
     private String userName;
 
-    /**
-     * 用户头像
-     */
+
+    @Schema(description = "用户头像")
+    @NotNull
     private String userAvatar;
 
-    /**
-     * 用户简介
-     */
+
+    @Schema(description = "用户简介")
+    @NotNull
     private String userProfile;
 
-    /**
-     * 用户角色：user/admin/ban
-     */
+
+    @Schema(description = "用户角色：user/admin/ban")
+    @NotNull
     private String userRole;
 
-    /**
-     * 创建时间
-     */
+
+    @Schema(description = "编辑时间")
+    @NotNull
+    private Date editTime;
+
+
+    @Schema(description = "创建时间")
+    @NotNull
     private Date createTime;
 
-    /**
-     * 更新时间
-     */
+
+    @Schema(description = "更新时间")
+    @NotNull
     private Date updateTime;
 
-    /**
-     * 是否删除
-     */
+
+    @Schema(description = "是否删除")
+    @NotNull
     @TableLogic
     private Integer isDelete;
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+
 }

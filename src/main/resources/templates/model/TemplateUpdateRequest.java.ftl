@@ -4,36 +4,20 @@ import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.List;
+<#-- 动态导入实体字段用到的类型（排除 java.lang） -->
+<#list importSet as imp>
+    import ${imp};
+</#list>
 
-/**
- * 更新${dataName}请求
- *
-
- */
 @Data
 public class ${upperDataKey}UpdateRequest implements Serializable {
 
-    /**
-     * id
-     */
-    @Schema(description = "id")
+<#-- 循环生成字段 -->
+<#list fields as f>
+    @Schema(description = "${f.camelName}")
     @NotNull
-    private Long id;
+    private ${f.type} ${f.name};
 
-    /**
-     * 标题
-     */
-    @Schema(description = "标题")
-    @NotNull
-    private String title;
-
-    /**
-     * 内容
-     */
-    @Schema(description = "标题")
-    @NotNull
-    private String content;
-
-    private static final long serialVersionUID = 1L;
+</#list>
+private static final long serialVersionUID = 1L;
 }

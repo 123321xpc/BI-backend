@@ -1,46 +1,40 @@
 package com.senaro.springbootinit.model.vo;
 
+import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
-/**
- * 用户视图（脱敏）
- *
-
- */
 @Data
 public class UserVO implements Serializable {
 
-    /**
-     * id
-     */
+    @Schema(description = "Id")
+    @NotNull
     private Long id;
 
-    /**
-     * 用户昵称
-     */
+
+    @Schema(description = "昵称")
+    @NotNull
     private String userName;
 
-    /**
-     * 用户头像
-     */
+    @Schema(description = "头像")
+    @NotNull
     private String userAvatar;
 
-    /**
-     * 用户简介
-     */
+    @Schema(description = "介绍")
+    @NotNull
     private String userProfile;
 
-    /**
-     * 用户角色：user/admin/ban
-     */
+    @Schema(description = "权限")
+    @NotNull
     private String userRole;
 
-    /**
-     * 创建时间
-     */
+    @Schema(description = "创建时间")
+    @NotNull
     private Date createTime;
+
 
     private static final long serialVersionUID = 1L;
 }
