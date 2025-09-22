@@ -14,7 +14,7 @@ public class ${upperDataKey}UpdateRequest implements Serializable {
 
 <#-- 循环生成字段 -->
 <#list fields as f>
-    @Schema(description = "${f.camelName}")
+    @Schema(description = "${f.description}")
     @NotNull
     private ${f.type} ${f.name};
 

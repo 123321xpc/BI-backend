@@ -11,11 +11,10 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static cn.hutool.core.text.CharSequenceUtil.upperFirst;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 代码生成器
- *
-
  */
 public class CodeGenerator {
 
@@ -29,9 +28,9 @@ public class CodeGenerator {
     public static void main(String[] args) throws TemplateException, IOException {
         // ===== ① 基础参数 =====
         String packageName = "com.senaro.springbootinit";
-        String dataName = "问题";
-        String dataKey = "question";
-        String upperDataKey = "Question";
+        String dataName = "用户";
+        String dataKey = "user";
+        String upperDataKey = "User";
 
         // ===== ② 指定实体类全限定名 =====
         String entityClassName = packageName + ".model.entity." + upperDataKey;
@@ -45,6 +44,7 @@ public class CodeGenerator {
         // ===== ③ 解析实体字段 =====
         List<Map<String, String>> fieldList = new ArrayList<>();
         Set<String> importSet = new HashSet<>();
+        Map<String, String> fieldDescriptions = new HashMap<>();  // 用于存储字段描述
 
         for (Field field : entityClass.getDeclaredFields()) {
             // 跳过 static / transient 字段
@@ -55,6 +55,15 @@ public class CodeGenerator {
             f.put("type", field.getType().getSimpleName());
             f.put("name", field.getName());
             f.put("camelName", upperFirst(field.getName()));
+
+            // 获取 @Schema(description) 注解
+            Schema schema = field.getAnnotation(Schema.class);
+            if (schema != null) {
+                f.put("description", schema.description());  // 存储字段描述
+            } else {
+                f.put("description", field.getName());  // 如果没有注解，默认用字段名
+            }
+
             fieldList.add(f);
 
             // 记录需额外导入的包（排除 java.lang 和基本类型）
@@ -76,16 +85,16 @@ public class CodeGenerator {
         // ===== ⑤ 调用模板生成 AddRequest（其余 Service / VO 等逻辑照旧）=====
         String projectPath = System.getProperty("user.dir");
         String inputPath = projectPath + "/src/main/resources/templates/model/TemplateAddRequest.java.ftl";
-        String outputPath = String.format("%s/generator/model/dto/%s/%sAddRequest.java", projectPath,dataKey, upperDataKey);
+        String outputPath = String.format("%s/generator/model/dto/%s/%sAddRequest.java", projectPath, dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
         inputPath = projectPath + "/src/main/resources/templates/model/TemplateEditRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%s/%sEditRequest.java", projectPath,dataKey, upperDataKey);
+        outputPath = String.format("%s/generator/model/dto/%s/%sEditRequest.java", projectPath, dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
         inputPath = projectPath + "/src/main/resources/templates/model/TemplateUpdateRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%s/%sUpdateRequest.java", projectPath,dataKey, upperDataKey);
+        outputPath = String.format("%s/generator/model/dto/%s/%sUpdateRequest.java", projectPath, dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
         inputPath = projectPath + "/src/main/resources/templates/model/TemplateQueryRequest.java.ftl";
-        outputPath = String.format("%s/generator/model/dto/%s/%sQueryRequest.java", projectPath,dataKey, upperDataKey);
+        outputPath = String.format("%s/generator/model/dto/%s/%sQueryRequest.java", projectPath, dataKey, upperDataKey);
         doGenerate(inputPath, outputPath, dataModel);
         System.out.println("生成 DTO 成功：" + outputPath);
         // 生成 VO
