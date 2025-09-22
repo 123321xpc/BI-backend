@@ -15,7 +15,6 @@ public class ${upperDataKey}VO implements Serializable {
 <#-- 循环生成字段 -->
 <#list fields as f>
     @Schema(description = "${f.camelName}")
-    @NotNull
     private ${f.type} ${f.name};
 
 </#list>
