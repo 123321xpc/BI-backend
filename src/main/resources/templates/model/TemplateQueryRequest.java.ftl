@@ -1,7 +1,7 @@
 package ${packageName}.model.dto.${dataKey};
 
 import lombok.Data;
-import com.senaro.springbootinit.common.PageRequest;
+import common.com.vickey.springbootinit.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
