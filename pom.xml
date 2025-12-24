@@ -12,9 +12,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.vickey</groupId>
-    <artifactId>springbootinit</artifactId>
+    <artifactId>oj</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>springbootinit</name>
+    <name>oj</name>
     <properties>
         <java.version>1.8</java.version>
     </properties>
