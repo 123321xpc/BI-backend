@@ -39,16 +39,6 @@ public class User implements Serializable {
     private String userPassword;
 
 
-    @Schema(description = "微信开放平台id")
-    @NotNull
-    private String unionId;
-
-
-    @Schema(description = "公众号openId")
-    @NotNull
-    private String mpOpenId;
-
-
     @Schema(description = "用户昵称")
     @NotNull
     private String userName;
