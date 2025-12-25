@@ -6,26 +6,30 @@ import com.vickey.bi.common.BaseResponse;
 import com.vickey.bi.common.DeleteRequest;
 import com.vickey.bi.common.ErrorCode;
 import com.vickey.bi.common.ResultUtils;
+import com.vickey.bi.constant.FileConstant;
 import com.vickey.bi.constant.UserConstant;
 import com.vickey.bi.exception.BusinessException;
 import com.vickey.bi.exception.ThrowUtils;
-import com.vickey.bi.model.dto.chart.ChartAddRequest;
-import com.vickey.bi.model.dto.chart.ChartEditRequest;
-import com.vickey.bi.model.dto.chart.ChartQueryRequest;
-import com.vickey.bi.model.dto.chart.ChartUpdateRequest;
+import com.vickey.bi.manager.excel.ExcelUtils;
+import com.vickey.bi.model.dto.chart.*;
+import com.vickey.bi.model.dto.file.UploadFileRequest;
 import com.vickey.bi.model.entity.Chart;
 import com.vickey.bi.model.entity.User;
+import com.vickey.bi.model.enums.FileUploadBizEnum;
 import com.vickey.bi.model.vo.ChartVO;
 import com.vickey.bi.service.ChartService;
 import com.vickey.bi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 
 /**
  * 图表接口
@@ -42,6 +46,51 @@ public class ChartController {
 
     @Resource
     private UserService userService;
+
+
+    @PostMapping("/generate")
+    public BaseResponse<String> getChartByAI(@RequestPart("file") MultipartFile multipartFile,
+                                             GenChartRequest genChartRequest, HttpServletRequest request) {
+
+        User loginUser = userService.getLoginUser(request);
+
+        String goal = genChartRequest.getGoal();
+        String chartData = genChartRequest.getChartData();
+        String chartType = genChartRequest.getChartType();
+        String name = genChartRequest.getName();
+
+        String csv = ExcelUtils.excelToCsv(multipartFile);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("分析目标:").append(goal).append("\n");
+        sb.append("分析数据:").append(csv).append("\n");
+
+        return ResultUtils.success(sb.toString());
+
+
+        // 文件目录：根据业务、用户来划分
+//        String uuid = RandomStringUtils.randomAlphanumeric(8);
+//        String filename = uuid + "-" + multipartFile.getOriginalFilename();
+//        File file = null;
+//        try {
+//            // 上传文件
+//            file = File.createTempFile(filepath, null);
+//            multipartFile.transferTo(file);
+//            // 返回可访问地址
+//            return ResultUtils.success(FileConstant.COS_HOST + filepath);
+//        } catch (Exception e) {
+//            log.error("file upload error, filepath = " + filepath, e);
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+//        } finally {
+//            if (file != null) {
+//                // 删除临时文件
+//                boolean delete = file.delete();
+//                if (!delete) {
+//                    log.error("file delete error, filepath = {}", filepath);
+//                }
+//            }
+//        }
+    }
 
     // region 增删改查
 

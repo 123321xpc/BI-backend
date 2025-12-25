@@ -16,6 +16,9 @@ public class ChartVO implements Serializable {
     @Schema(description = "分析目标")
     private String goal;
 
+    @Schema(description = "图表名")
+    private String name;
+
     @Schema(description = "图表数据")
     private String chartData;
 

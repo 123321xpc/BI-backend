@@ -35,6 +35,10 @@ public class Chart implements Serializable {
     @NotNull
     private String chartData;
 
+    @Schema(description = "图表名")
+    @NotNull
+    private String name;
+
 
     @Schema(description = "图表类型")
     @NotNull

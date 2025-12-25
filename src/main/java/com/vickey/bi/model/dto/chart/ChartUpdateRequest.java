@@ -13,6 +13,9 @@ public class ChartUpdateRequest implements Serializable {
     @Schema(description = "id")
     private Long id;
 
+    @Schema(description = "图表名")
+    private String name;
+
     @Schema(description = "分析目标")
     private String goal;
 

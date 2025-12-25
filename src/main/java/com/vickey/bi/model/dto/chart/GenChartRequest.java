@@ -1,34 +1,28 @@
 package com.vickey.bi.model.dto.chart;
 
-import com.vickey.bi.common.PageRequest;
-import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Date;
 
 @Data
-public class ChartQueryRequest extends PageRequest implements Serializable {
-
-    @Schema(description = "id")
-    private Long id;
+public class GenChartRequest implements Serializable {
 
     @Schema(description = "分析目标")
+    @NotNull
     private String goal;
 
+    @Schema(description = "图表数据")
+    @NotNull
+    private String chartData;
+
     @Schema(description = "图表类型")
+    @NotNull
     private String chartType;
 
-
-    @Schema(description = "搜索关键字")
-    private String searchText;
-
-
-    @Schema(description = "创建用户 id")
-    private Long userId;
-
     @Schema(description = "图表名")
+    @NotNull
     private String name;
 
 

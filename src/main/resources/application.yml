@@ -71,3 +71,7 @@ cos:
 springdoc:
   swagger-ui:
     path: /doc
+
+deepseek:
+  api:
+    key: sk-60c2138d16314516a2d4bf3f75a4fdeb

@@ -45,9 +45,11 @@ public class ChartServiceImpl extends ServiceImpl<ChartMapper, Chart> implements
         String goal = chartQueryRequest.getGoal();
         String chartType = chartQueryRequest.getChartType();
         Long userId = chartQueryRequest.getUserId();
+        String name = chartQueryRequest.getName();
 
 
         queryWrapper.eq(StringUtils.isNotBlank(goal), "goal", goal);
+        queryWrapper.eq(StringUtils.isNotBlank(name), "name", name);
         queryWrapper.eq(StringUtils.isNotBlank(chartType), "chartType", chartType);
         queryWrapper.eq("isDelete", false);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);

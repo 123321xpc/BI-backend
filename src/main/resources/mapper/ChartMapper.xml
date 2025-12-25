@@ -7,6 +7,7 @@
     <resultMap id="BaseResultMap" type="com.vickey.bi.model.entity.Chart">
             <id property="id" column="id" />
             <result property="goal" column="goal" />
+        <result property="name" column="name"/>
             <result property="chartData" column="chartData" />
             <result property="chartType" column="chartType" />
             <result property="genChart" column="genChart" />
@@ -18,7 +19,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,goal,chartData,chartType,genChart,genResult,
+        id
+        ,goal,name,chartData,chartType,genChart,genResult,
         userId,createTime,updateTime,isDelete
     </sql>
 </mapper>

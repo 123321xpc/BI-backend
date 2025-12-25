@@ -22,6 +22,10 @@ public class ChartAddRequest implements Serializable {
     @NotNull
     private String chartType;
 
+    @Schema(description = "图表名")
+    @NotNull
+    private String name;
+
 
     private static final long serialVersionUID = 1L;
 }

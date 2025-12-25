@@ -22,6 +22,9 @@ public class ChartEditRequest implements Serializable {
     @Schema(description = "图表类型")
     private String chartType;
 
+    @Schema(description = "图表名")
+    private String name;
+
 
     private static final long serialVersionUID = 1L;
 }
