@@ -1,7 +1,7 @@
 package ${packageName}.model.dto.${dataKey};
 
 import lombok.Data;
-import common.com.vickey.oj.PageRequest;
+import common.com.vickey.bi.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;

@@ -12,9 +12,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.vickey</groupId>
-    <artifactId>oj</artifactId>
+    <artifactId>bi</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>oj</name>
+    <name>bi</name>
     <properties>
         <java.version>1.8</java.version>
     </properties>
