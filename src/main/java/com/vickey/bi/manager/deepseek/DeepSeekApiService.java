@@ -7,7 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class DeepSeekApiService {
@@ -20,13 +24,17 @@ public class DeepSeekApiService {
     private static final String DEEPSEEK_CHAT_API = "https://api.deepseek.com/v1/chat/completions";
 
     // 完整的 System 指令（定义 AI 角色/行为准则，可根据业务调整）
-    private static final String msg1 = "你是一个数据分析师和前端开发专家，接下来我会按照以下格式给你提供内容：\n" +
+    private static final String SYSTEM_MESSAGE = "你是一个数据分析师和前端开发专家，接下来我会按照以下格式给你提供内容：\n" +
             "\n" +
             "【【【【\n" +
+            "\n" +
+            "{{数据名称，例如“销售额与渠道”}}\n" +
             "\n" +
             "{{具体分析目标，一段文字}}\n" +
             "\n" +
             "{{需要分析的数据内容，csv格式，用,进行分割}}\n" +
+            "\n" +
+            "{{所需要生成图表的类型，例如柱状图、折线图等}}\n" +
             "\n" +
             "】】】】\n" +
             "\n" +
@@ -40,10 +48,28 @@ public class DeepSeekApiService {
             "\n" +
             "\n" +
             "\n" +
-            "不要生成任何其他多余内容，包括注释。";
+            "echarts图表必须是给定的图表，不要生成任何其他多余内容，包括注释。";
 
     @Resource
     private RestTemplate restTemplate;
+
+    public List<String> extractContent(String content) {
+        // 定义正则表达式：匹配【【【和】】】之间的任意字符（非贪婪匹配，避免跨段）
+        String regex = "【{3}(.*?)】{3}";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+
+        List<String> resultList = new ArrayList<>();
+        // 循环匹配所有符合条件的内容
+        while (matcher.find()) {
+            // group(1) 取【【【和】】】之间的内容（group(0)是包含定界符的完整匹配）
+            String matchContent = matcher.group(1).trim(); // 去除首尾空格
+            if (!matchContent.isEmpty()) {
+                resultList.add(matchContent);
+            }
+        }
+        return resultList;
+    }
 
     /**
      * 调用 DeepSeek 对话 API（正确传入 system 消息）
@@ -62,7 +88,7 @@ public class DeepSeekApiService {
         // 关键：messages 列表中，system 消息放最前面，user 消息紧随其后
         request.setMessages(Arrays.asList(
                 // System 消息：定义 AI 的行为准则（优先级最高）
-                DeepSeekChatRequest.Message.of("system", msg1),
+                DeepSeekChatRequest.Message.of("system", SYSTEM_MESSAGE),
                 // User 消息：用户的实际提问
                 DeepSeekChatRequest.Message.of("user", userMessage)
         ));

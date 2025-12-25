@@ -34,14 +34,6 @@ public class ChartVO implements Serializable {
     @Schema(description = "创建用户 id")
     private Long userId;
 
-    @Schema(description = "创建时间")
-    private Date createTime;
-
-    @Schema(description = "更新时间")
-    private Date updateTime;
-
-    @Schema(description = "是否删除")
-    private Integer isDelete;
 
     private static final long serialVersionUID = 1L;
 }

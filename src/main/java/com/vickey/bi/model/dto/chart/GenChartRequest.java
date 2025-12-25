@@ -13,10 +13,6 @@ public class GenChartRequest implements Serializable {
     @NotNull
     private String goal;
 
-    @Schema(description = "图表数据")
-    @NotNull
-    private String chartData;
-
     @Schema(description = "图表类型")
     @NotNull
     private String chartType;

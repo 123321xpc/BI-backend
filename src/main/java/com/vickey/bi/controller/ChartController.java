@@ -10,6 +10,7 @@ import com.vickey.bi.constant.FileConstant;
 import com.vickey.bi.constant.UserConstant;
 import com.vickey.bi.exception.BusinessException;
 import com.vickey.bi.exception.ThrowUtils;
+import com.vickey.bi.manager.deepseek.DeepSeekApiService;
 import com.vickey.bi.manager.excel.ExcelUtils;
 import com.vickey.bi.model.dto.chart.*;
 import com.vickey.bi.model.dto.file.UploadFileRequest;
@@ -22,14 +23,19 @@ import com.vickey.bi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.util.List;
 
 /**
  * 图表接口
@@ -46,26 +52,55 @@ public class ChartController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private DeepSeekApiService deepSeekApiService;
 
 
     @PostMapping("/generate")
-    public BaseResponse<String> getChartByAI(@RequestPart("file") MultipartFile multipartFile,
+    public BaseResponse<ChartVO> getChartByAI(@RequestPart("file") MultipartFile multipartFile,
                                              GenChartRequest genChartRequest, HttpServletRequest request) {
 
         User loginUser = userService.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
 
         String goal = genChartRequest.getGoal();
-        String chartData = genChartRequest.getChartData();
-        String chartType = genChartRequest.getChartType();
         String name = genChartRequest.getName();
+        String chartType = genChartRequest.getChartType();
+
+        ThrowUtils.throwIf(StringUtils.isAnyBlank(goal, chartType), ErrorCode.PARAMS_ERROR);
 
         String csv = ExcelUtils.excelToCsv(multipartFile);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("分析目标:").append(goal).append("\n");
-        sb.append("分析数据:").append(csv).append("\n");
+        sb.append("【【【【").append("\n");
+        sb.append("{{").append(name).append("}}").append("\n");
+        sb.append("{{").append(goal).append("}}").append("\n");
+        sb.append("{{").append(csv).append("}}").append("\n");
+        sb.append("{{").append(chartType).append("}}").append("\n");
+        sb.append("】】】】");
 
-        return ResultUtils.success(sb.toString());
+        String aiAns = deepSeekApiService.chatWithDeepSeek(sb.toString());
+
+        List<String> ansList = deepSeekApiService.extractContent(aiAns);
+
+        ChartVO res = new ChartVO();
+
+
+        BeanUtils.copyProperties(genChartRequest, res);
+        res.setGenResult(ansList.get(0));
+        res.setGenChart(ansList.get(1));
+        res.setChartData(csv);
+        res.setUserId(loginUser.getId());
+
+        Chart chart = new Chart();
+        BeanUtils.copyProperties(res, chart);
+
+        boolean saveRes = chartService.save(chart);
+
+        ThrowUtils.throwIf(!saveRes, ErrorCode.OPERATION_ERROR, "保存数据库失败");
+
+
+        return ResultUtils.success(res);
 
 
         // 文件目录：根据业务、用户来划分
