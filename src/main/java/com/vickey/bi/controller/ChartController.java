@@ -10,6 +10,7 @@ import com.vickey.bi.constant.FileConstant;
 import com.vickey.bi.constant.UserConstant;
 import com.vickey.bi.exception.BusinessException;
 import com.vickey.bi.exception.ThrowUtils;
+import com.vickey.bi.manager.RedissonLimiter;
 import com.vickey.bi.manager.deepseek.DeepSeekApiService;
 import com.vickey.bi.manager.excel.ExcelUtils;
 import com.vickey.bi.model.dto.chart.*;
@@ -36,6 +37,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 图表接口
@@ -52,8 +54,15 @@ public class ChartController {
 
     @Resource
     private UserService userService;
+
     @Resource
     private DeepSeekApiService deepSeekApiService;
+
+    @Resource
+    private RedissonLimiter redissonLimiter;
+
+    public final int MAX_FILE_SIZE = 5 * 1024 * 1024;   // 最大文件大小 5M
+    public final String[] ALLOWED_FILE_TYPES = {"xls", "xlsx"};
 
 
     @PostMapping("/generate")
@@ -63,10 +72,22 @@ public class ChartController {
         User loginUser = userService.getLoginUser(request);
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
 
+        //  用户限流(不通过直接抛异常)
+        redissonLimiter.doLimit("user_" + loginUser.getId());
+
         String goal = genChartRequest.getGoal();
         String chartType = genChartRequest.getChartType();
 
         ThrowUtils.throwIf(StringUtils.isAnyBlank(goal), ErrorCode.PARAMS_ERROR);
+
+        // 校验文件
+        // 校验文件大小
+        ThrowUtils.throwIf(multipartFile.getSize() > MAX_FILE_SIZE, ErrorCode.OPERATION_ERROR, "文件大小不能超过5M！");
+
+        //  校验文件格式
+        String suffix = Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+        ThrowUtils.throwIf(!ArrayUtils.contains(ALLOWED_FILE_TYPES, suffix), ErrorCode.OPERATION_ERROR, "文件格式不支持！");
+
 
         String csv = ExcelUtils.excelToCsv(multipartFile);
 
