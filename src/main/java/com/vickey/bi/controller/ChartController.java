@@ -64,16 +64,14 @@ public class ChartController {
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
 
         String goal = genChartRequest.getGoal();
-        String name = genChartRequest.getName();
         String chartType = genChartRequest.getChartType();
 
-        ThrowUtils.throwIf(StringUtils.isAnyBlank(goal, chartType), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StringUtils.isAnyBlank(goal), ErrorCode.PARAMS_ERROR);
 
         String csv = ExcelUtils.excelToCsv(multipartFile);
 
         StringBuilder sb = new StringBuilder();
         sb.append("【【【【").append("\n");
-        sb.append("{{").append(name).append("}}").append("\n");
         sb.append("{{").append(goal).append("}}").append("\n");
         sb.append("{{").append(csv).append("}}").append("\n");
         sb.append("{{").append(chartType).append("}}").append("\n");
@@ -85,11 +83,12 @@ public class ChartController {
 
         ChartVO res = new ChartVO();
 
-
         BeanUtils.copyProperties(genChartRequest, res);
-        res.setGenResult(ansList.get(0));
-        res.setGenChart(ansList.get(1));
+        res.setName(ansList.get(0));
+        res.setGenResult(ansList.get(1));
+        res.setGenChart(ansList.get(2));
         res.setChartData(csv);
+        res.setChartType(StringUtils.isBlank(chartType)? ansList.get(3) : chartType);
         res.setUserId(loginUser.getId());
 
         Chart chart = new Chart();
@@ -99,32 +98,8 @@ public class ChartController {
 
         ThrowUtils.throwIf(!saveRes, ErrorCode.OPERATION_ERROR, "保存数据库失败");
 
-
         return ResultUtils.success(res);
 
-
-        // 文件目录：根据业务、用户来划分
-//        String uuid = RandomStringUtils.randomAlphanumeric(8);
-//        String filename = uuid + "-" + multipartFile.getOriginalFilename();
-//        File file = null;
-//        try {
-//            // 上传文件
-//            file = File.createTempFile(filepath, null);
-//            multipartFile.transferTo(file);
-//            // 返回可访问地址
-//            return ResultUtils.success(FileConstant.COS_HOST + filepath);
-//        } catch (Exception e) {
-//            log.error("file upload error, filepath = " + filepath, e);
-//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
-//        } finally {
-//            if (file != null) {
-//                // 删除临时文件
-//                boolean delete = file.delete();
-//                if (!delete) {
-//                    log.error("file delete error, filepath = {}", filepath);
-//                }
-//            }
-//        }
     }
 
     // region 增删改查

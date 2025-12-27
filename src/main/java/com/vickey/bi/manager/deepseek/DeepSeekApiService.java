@@ -28,42 +28,42 @@ public class DeepSeekApiService {
             "\n" +
             "【【【【\n" +
             "\n" +
-            "{{数据名称，例如“销售额与渠道”}}\n" +
-            "\n" +
             "{{具体分析目标，一段文字}}\n" +
             "\n" +
             "{{需要分析的数据内容，csv格式，用,进行分割}}\n" +
             "\n" +
-            "{{所需要生成图表的类型，例如柱状图、折线图等}}\n" +
+            "{{所需要生成图表的类型，例如柱状图、折线图等。图表类型可能为空，若为空，则自动选择最合适的图表类型}}\n" +
             "\n" +
             "】】】】\n" +
             "\n" +
             "请根据上述内容进行分析，并严格按照如下格式生成内容。\n" +
             "\n" +
-            "\n" +
+            "【【【生成的图表名，名称最后需标明是什么类型的图表。20字以内】】】\n" +
             "\n" +
             "【【【具体的分析结果，700字以内】】】\n" +
             "\n" +
-            "【【【对应的echarts V5版本的options对象的js代码】】】\n" +
+            "【【【对应的echarts V5版本的options对象的js代码，使用json格式，图表名设置为之前生成的图表名，在title中添加bottom: '10px';left: 'center' 和tooltip属性。不需要前边的options=以及最后的;】】】\n" +
             "\n" +
+            "【【【生成的图表类型，10字以内】】】\n" +
             "\n" +
-            "\n" +
-            "echarts图表必须是给定的图表，不要生成任何其他多余内容，包括注释。";
+            "注意：不要生成任何其他多余内容，包括注释！";
 
     @Resource
     private RestTemplate restTemplate;
 
     public List<String> extractContent(String content) {
-        // 定义正则表达式：匹配【【【和】】】之间的任意字符（非贪婪匹配，避免跨段）
-        String regex = "【{3}(.*?)】{3}";
-        Pattern pattern = Pattern.compile(regex);
+        // 核心修复：
+        // 1. 使用Unicode转义符匹配【】，避免字符编码问题
+        // 2. 添加Pattern.DOTALL模式，让.匹配包括换行在内的所有字符
+        String regex = "\\u3010{3}(.*?)\\u3011{3}";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL); // 关键：DOTALL模式必须加
         Matcher matcher = pattern.matcher(content);
 
         List<String> resultList = new ArrayList<>();
-        // 循环匹配所有符合条件的内容
         while (matcher.find()) {
-            // group(1) 取【【【和】】】之间的内容（group(0)是包含定界符的完整匹配）
-            String matchContent = matcher.group(1).trim(); // 去除首尾空格
+            // 先判断group(1)是否为空，避免空指针
+            String matchContent = matcher.group(1) == null ? "" : matcher.group(1).trim();
+            // 即使内容包含换行/空格，只要非空就加入结果（可根据需求调整trim()）
             if (!matchContent.isEmpty()) {
                 resultList.add(matchContent);
             }

@@ -31,8 +31,7 @@ public class ExcelUtils {
                 .filter(Objects::nonNull)
                 .map(dto -> String.join(",",
                         StringUtils.isNotBlank(dto.getName()) ? dto.getName() : "",
-                        StringUtils.isNotBlank(dto.getAge().toString()) ? dto.getAge().toString() : "",
-                        StringUtils.isNotBlank(dto.getPhone()) ? dto.getPhone() : ""
+                        StringUtils.isNotBlank(dto.getPrice().toString()) ? dto.getPrice().toString() : ""
                 ))
                 .collect(Collectors.joining("\n"));
     }

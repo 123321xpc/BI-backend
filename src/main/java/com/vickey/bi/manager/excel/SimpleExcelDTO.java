@@ -8,15 +8,10 @@ import lombok.Data;
  */
 @Data // Lombok 自动生成get/set/toString
 public class SimpleExcelDTO {
-    // 列名：姓名（与Excel表头一致）
-    @ExcelProperty("姓名")
+    @ExcelProperty("名称")
     private String name;
 
-    // 列名：年龄
-    @ExcelProperty("年龄")
-    private Integer age;
+    @ExcelProperty("价格")
+    private Integer price;
 
-    // 列名：手机号
-    @ExcelProperty("手机号")
-    private String phone;
 }
