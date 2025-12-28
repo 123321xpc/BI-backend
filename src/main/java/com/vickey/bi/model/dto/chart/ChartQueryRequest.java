@@ -20,6 +20,11 @@ public class ChartQueryRequest extends PageRequest implements Serializable {
     @Schema(description = "图表类型")
     private String chartType;
 
+    @Schema(description="执行信息")
+    private String execMsg;
+
+    @Schema(description="图表状态 - processing, success, failure")
+    private String status;
 
     @Schema(description = "搜索关键字")
     private String searchText;

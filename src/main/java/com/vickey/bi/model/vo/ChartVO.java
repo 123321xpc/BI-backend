@@ -22,6 +22,12 @@ public class ChartVO implements Serializable {
     @Schema(description = "图表数据")
     private String chartData;
 
+    @Schema(description="执行信息")
+    private String execMsg;
+
+    @Schema(description="图表状态 - processing, success, failure")
+    private String status;
+
     @Schema(description = "图表类型")
     private String chartType;
 

@@ -44,6 +44,14 @@ public class Chart implements Serializable {
     @NotNull
     private String chartType;
 
+    @Schema(description="执行信息")
+    private String execMsg;
+
+
+    @Schema(description="图表状态 - processing, success, failure")
+    @NotNull
+    private String status;
+
 
     @Schema(description = "生成的图表数据")
     @NotNull

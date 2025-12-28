@@ -38,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 图表接口
@@ -61,12 +63,15 @@ public class ChartController {
     @Resource
     private RedissonLimiter redissonLimiter;
 
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
+
     public final int MAX_FILE_SIZE = 5 * 1024 * 1024;   // 最大文件大小 5M
     public final String[] ALLOWED_FILE_TYPES = {"xls", "xlsx"};
 
 
     @PostMapping("/generate")
-    public BaseResponse<ChartVO> getChartByAI(@RequestPart("file") MultipartFile multipartFile,
+    public BaseResponse<Boolean> getChartByAI(@RequestPart("file") MultipartFile multipartFile,
                                              GenChartRequest genChartRequest, HttpServletRequest request) {
 
         User loginUser = userService.getLoginUser(request);
@@ -85,7 +90,7 @@ public class ChartController {
         ThrowUtils.throwIf(multipartFile.getSize() > MAX_FILE_SIZE, ErrorCode.OPERATION_ERROR, "文件大小不能超过5M！");
 
         //  校验文件格式
-        String suffix = Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+        String suffix = Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
         ThrowUtils.throwIf(!ArrayUtils.contains(ALLOWED_FILE_TYPES, suffix), ErrorCode.OPERATION_ERROR, "文件格式不支持！");
 
 
@@ -98,29 +103,63 @@ public class ChartController {
         sb.append("{{").append(chartType).append("}}").append("\n");
         sb.append("】】】】");
 
-        String aiAns = deepSeekApiService.chatWithDeepSeek(sb.toString());
 
-        List<String> ansList = deepSeekApiService.extractContent(aiAns);
+        //  先存储到数据库中
+        Chart partChart = new Chart();
+        BeanUtils.copyProperties(genChartRequest, partChart);
 
-        ChartVO res = new ChartVO();
+        partChart.setStatus("wait");
+        partChart.setExecMsg("等待生成...");
+        partChart.setChartData(csv);
+        partChart.setUserId(loginUser.getId());
 
-        BeanUtils.copyProperties(genChartRequest, res);
-        res.setName(ansList.get(0));
-        res.setGenResult(ansList.get(1));
-        res.setGenChart(ansList.get(2));
-        res.setChartData(csv);
-        res.setChartType(StringUtils.isBlank(chartType)? ansList.get(3) : chartType);
-        res.setUserId(loginUser.getId());
-
-        Chart chart = new Chart();
-        BeanUtils.copyProperties(res, chart);
-
-        boolean saveRes = chartService.save(chart);
-
+        boolean saveRes = chartService.save(partChart);
         ThrowUtils.throwIf(!saveRes, ErrorCode.OPERATION_ERROR, "保存数据库失败");
 
-        return ResultUtils.success(res);
+        //  提交线程池
+        CompletableFuture.runAsync(() -> {
+            // 打印当前执行任务的线程信息
+            log.info("线程 [{}] 开始执行任务，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
 
+            Chart chart = new Chart();
+            chart.setId(partChart.getId());
+            chart.setStatus("processing");
+            chart.setExecMsg("正在生成中...");
+            boolean b = chartService.updateById(chart);
+            if(!b) handleUpdateChartStatusFailure(chart.getId());
+
+            //  调用 AI
+            log.info("线程 [{}] 开始调用AI接口，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
+            String aiAns = deepSeekApiService.chatWithDeepSeek(sb.toString());
+            log.info("线程 [{}] 完成AI接口调用，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
+
+            List<String> ansList = deepSeekApiService.extractContent(aiAns);
+
+            //  保存 AI 结果
+            chart.setStatus("success");
+            chart.setExecMsg("生成成功！");
+            chart.setName(ansList.get(0));
+            chart.setGenResult(ansList.get(1));
+            chart.setGenChart(ansList.get(2));
+            chart.setChartType(ansList.get(3));
+
+            boolean res = chartService.updateById(chart);
+            if(!res) handleUpdateChartStatusFailure(chart.getId());
+            
+            log.info("线程 [{}] 完成任务，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
+
+        }, threadPoolExecutor);
+
+        return ResultUtils.success(true);
+
+    }
+
+    public void handleUpdateChartStatusFailure(Long chartId) {
+        Chart chart = new Chart();
+        chart.setId(chartId);
+        chart.setStatus("failure");
+        chart.setExecMsg("更新数据库失败");
+        chartService.updateById(chart);
     }
 
     // region 增删改查

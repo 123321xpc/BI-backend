@@ -22,6 +22,12 @@ public class ChartAddRequest implements Serializable {
     @NotNull
     private String chartType;
 
+    @Schema(description="执行信息")
+    private String execMsg;
+
+    @Schema(description="图表状态 - processing, success, failure")
+    private String status;
+
     @Schema(description = "图表名")
     @NotNull
     private String name;

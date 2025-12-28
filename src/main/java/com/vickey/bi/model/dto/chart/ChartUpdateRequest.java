@@ -19,6 +19,12 @@ public class ChartUpdateRequest implements Serializable {
     @Schema(description = "分析目标")
     private String goal;
 
+    @Schema(description="执行信息")
+    private String execMsg;
+
+    @Schema(description="图表状态 - processing, success, failure")
+    private String status;
+
     @Schema(description = "图表数据")
     private String chartData;
 
