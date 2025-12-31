@@ -19,6 +19,7 @@ import com.vickey.bi.model.entity.Chart;
 import com.vickey.bi.model.entity.User;
 import com.vickey.bi.model.enums.FileUploadBizEnum;
 import com.vickey.bi.model.vo.ChartVO;
+import com.vickey.bi.mq.MsgProducer;
 import com.vickey.bi.service.ChartService;
 import com.vickey.bi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +67,12 @@ public class ChartController {
     @Resource
     private ThreadPoolExecutor threadPoolExecutor;
 
+    @Resource
+    private MsgProducer msgProducer;
+
     public final int MAX_FILE_SIZE = 5 * 1024 * 1024;   // 最大文件大小 5M
     public final String[] ALLOWED_FILE_TYPES = {"xls", "xlsx"};
+
 
 
     @PostMapping("/generate")
@@ -109,57 +114,19 @@ public class ChartController {
         BeanUtils.copyProperties(genChartRequest, partChart);
 
         partChart.setStatus("wait");
-        partChart.setExecMsg("等待生成...");
+        partChart.setExecMsg(sb.toString());
         partChart.setChartData(csv);
         partChart.setUserId(loginUser.getId());
 
         boolean saveRes = chartService.save(partChart);
         ThrowUtils.throwIf(!saveRes, ErrorCode.OPERATION_ERROR, "保存数据库失败");
 
-        //  提交线程池
-        CompletableFuture.runAsync(() -> {
-            // 打印当前执行任务的线程信息
-            log.info("线程 [{}] 开始执行任务，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
+//        String aiAns = deepSeekApiService.chatWithDeepSeek(sb.toString());
+        msgProducer.sendMessage(partChart.getId().toString());
 
-            Chart chart = new Chart();
-            chart.setId(partChart.getId());
-            chart.setStatus("processing");
-            chart.setExecMsg("正在生成中...");
-            boolean b = chartService.updateById(chart);
-            if(!b) handleUpdateChartStatusFailure(chart.getId());
-
-            //  调用 AI
-            log.info("线程 [{}] 开始调用AI接口，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
-            String aiAns = deepSeekApiService.chatWithDeepSeek(sb.toString());
-            log.info("线程 [{}] 完成AI接口调用，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
-
-            List<String> ansList = deepSeekApiService.extractContent(aiAns);
-
-            //  保存 AI 结果
-            chart.setStatus("success");
-            chart.setExecMsg("生成成功！");
-            chart.setName(ansList.get(0));
-            chart.setGenResult(ansList.get(1));
-            chart.setGenChart(ansList.get(2));
-            chart.setChartType(ansList.get(3));
-
-            boolean res = chartService.updateById(chart);
-            if(!res) handleUpdateChartStatusFailure(chart.getId());
-            
-            log.info("线程 [{}] 完成任务，图表ID: {}", Thread.currentThread().getName(), partChart.getId());
-
-        }, threadPoolExecutor);
 
         return ResultUtils.success(true);
 
-    }
-
-    public void handleUpdateChartStatusFailure(Long chartId) {
-        Chart chart = new Chart();
-        chart.setId(chartId);
-        chart.setStatus("failure");
-        chart.setExecMsg("更新数据库失败");
-        chartService.updateById(chart);
     }
 
     // region 增删改查
